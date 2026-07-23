@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "campero-erp",
+  // TODO: reemplazar por el account_id de la cuenta Cloudflare que se use para Campero
+  // (NO reutilizar el account_id de Poppins).
+  "account_id": "REPLACE_ME",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  // Variables de RUNTIME (server-side). Las NEXT_PUBLIC_* además deben ir como
+  // env vars de BUILD en el dashboard de Workers Builds (Next las inlinea al compilar).
+  // Los SECRETOS (service_role, BUK, etc.) NO van acá: usar `wrangler secret put` o el dashboard.
+  "vars": {
+    // TODO: URL del proyecto Supabase NUEVO de Campero (no reutilizar sczxyejqooqthxcxksah, ese es de Poppins)
+    "NEXT_PUBLIC_SUPABASE_URL": "REPLACE_ME",
+    "NEXT_PUBLIC_SITE_URL": "REPLACE_ME",
+    "NEXT_PUBLIC_APP_URL": "REPLACE_ME",
+    // TODO: subdominio BUK de Campero, si corresponde
+    "BUK_API_BASE_URL": "REPLACE_ME"
+  }
+}
