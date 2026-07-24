@@ -32,16 +32,22 @@ de Poppins:
   no se portó.
 - Branding de Poppins (fuentes, colores, copy de marketing).
 
-## Estado actual (primer commit)
+## Estado actual (segundo commit)
 
 Esto es un esqueleto, no una app funcional todavía:
 
 - [x] Motor de payroll, BUK, contratos, PDFs — portado y sin dependencias rotas (verificado
       que ningún import apunta a código descartado).
 - [x] Shell de Next.js mínimo (`src/app/layout.tsx`, `page.tsx`) — sin auth ni contenido real.
-- [ ] **Schema de base de datos — no existe.** Hay que diseñarlo de cero: colaboradores,
-      contratos, períodos, liquidaciones, y los conceptos nuevos que Poppins nunca necesitó
-      (IVA/F29, RAI/SAC). Ver `CONTEXT.md` para lo que ya está definido y lo que falta.
+- [x] **Schema base de datos** — `supabase/migrations/0001_init.sql`: empresas (con historial
+      de régimen tributario), colaboradores, contratos + anexos, períodos, liquidaciones,
+      envíos a Previred, F29 mensual (agregado, no factura por factura), usuarios permitidos
+      + RLS. Ver ADRs 0001-0003 en `docs/adr/`. Probado contra Postgres real (11 tablas,
+      constraint de "un solo régimen abierto" verificado). **No aplicada todavía a ningún
+      proyecto Supabase real** — falta crear el proyecto y correr la migración.
+- [ ] **RAI/SAC** — solo existe como tabla esqueleto (`rai_sac_stub`) para no romper las
+      foreign keys de otras tablas. Los campos reales todavía no están diseñados con
+      Manuel — no usar tal cual.
 - [ ] Auth — `src/lib/auth/context.tsx` tiene lógica de Poppins acoplada a su modelo
       multi-empleador; hay que revisarla y simplificarla para un solo tenant.
 - [ ] Proyecto Supabase propio — **no reutilizar el de Poppins** (`sczxyejqooqthxcxksah`).
@@ -53,13 +59,16 @@ Esto es un esqueleto, no una app funcional todavía:
 ```bash
 npm install
 cp .env.local.example .env.local   # completar con el Supabase NUEVO de Campero
+# crear el proyecto en supabase.com, luego aplicar supabase/migrations/0001_init.sql
 npm run dev
 ```
 
 ## Próximos pasos sugeridos
 
-1. Sesión de diseño de dominio (grilling + domain-modeling) para cerrar el schema:
-   colaboradores, contratos, períodos, liquidaciones, IVA/F29, RAI/SAC.
-2. Migraciones iniciales en `supabase/migrations/`.
-3. Adaptar `src/lib/auth` a single-tenant.
-4. Primera pantalla real: listar colaboradores + generar liquidación del mes.
+1. Crear el proyecto Supabase de Campero y aplicar `0001_init.sql`.
+2. Confirmar con Manuel los ADR 0002 y 0003 (régimen como historial, F29 agregado) — se
+   decidieron con luz verde general pero sin revisar cada campo con él.
+3. Revisar `f29_periodos` contra un F29 real de Campero antes de usarlo para declarar.
+4. Diseñar RAI/SAC en sesión de dominio aparte (el hueco real que queda).
+5. Adaptar `src/lib/auth` a single-tenant.
+6. Primera pantalla real: listar colaboradores + generar liquidación del mes.
