@@ -1,6 +1,11 @@
 # 0001 — Modelar "empresa" como tabla, aunque hoy tenga una sola fila
 
-**Estado:** Aceptado (decisión de Manuel, 2026-07-23, vía conversación con Claude)
+**Estado:** SUPERADO por ADR 0004 (2026-08-04). La premisa single-tenant ("una sola
+empresa: Campero") dejó de valer: el ERP es multi-entidad (Campero + René). La decisión de
+modelar la empresa como tabla se mantiene y se refuerza — ahora es `entidades` con varias
+filas y `entidad_id` en la raíz. Ver ADR 0004.
+
+**Estado original:** Aceptado (decisión de Manuel, 2026-07-23, vía conversación con Claude)
 
 ## Contexto
 

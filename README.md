@@ -1,7 +1,8 @@
 # Campero ERP
 
-Sistema interno de contabilidad y remuneraciones de Sociedad Comercial Agrícola e Inversiones
-Campero Limitada (RUT 77.488.690-7). Single-tenant: no es un producto para vender a terceros.
+Sistema interno de contabilidad, tributación y remuneraciones. **Multi-entidad** (uso interno,
+no es producto para terceros): administra dos contribuyentes, ambos 14A con contabilidad
+completa — **Campero Ltda** (RUT 77.488.690-7) y **René Aravena Riffo** (RUT 6.836.579-1).
 
 ## Origen del código
 
@@ -32,27 +33,27 @@ de Poppins:
   no se portó.
 - Branding de Poppins (fuentes, colores, copy de marketing).
 
-## Estado actual (segundo commit)
+## Estado actual (2026-08-04)
 
-Esto es un esqueleto, no una app funcional todavía:
+Schema y datos base ya viven en un Supabase real; falta la capa de app.
 
-- [x] Motor de payroll, BUK, contratos, PDFs — portado y sin dependencias rotas (verificado
-      que ningún import apunta a código descartado).
+- [x] Motor de payroll, BUK, contratos, PDFs — portado y sin dependencias rotas.
 - [x] Shell de Next.js mínimo (`src/app/layout.tsx`, `page.tsx`) — sin auth ni contenido real.
-- [x] **Schema base de datos** — `supabase/migrations/0001_init.sql`: empresas (con historial
-      de régimen tributario), colaboradores, contratos + anexos, períodos, liquidaciones,
-      envíos a Previred, F29 mensual (agregado, no factura por factura), usuarios permitidos
-      + RLS. Ver ADRs 0001-0003 en `docs/adr/`. Probado contra Postgres real (11 tablas,
-      constraint de "un solo régimen abierto" verificado). **No aplicada todavía a ningún
-      proyecto Supabase real** — falta crear el proyecto y correr la migración.
-- [ ] **RAI/SAC** — solo existe como tabla esqueleto (`rai_sac_stub`) para no romper las
-      foreign keys de otras tablas. Los campos reales todavía no están diseñados con
-      Manuel — no usar tal cual.
-- [ ] Auth — `src/lib/auth/context.tsx` tiene lógica de Poppins acoplada a su modelo
-      multi-empleador; hay que revisarla y simplificarla para un solo tenant.
-- [ ] Proyecto Supabase propio — **no reutilizar el de Poppins** (`sczxyejqooqthxcxksah`).
-- [ ] Cuenta/proyecto Cloudflare propio para el deploy — ver `wrangler.jsonc`, tiene
-      placeholders `REPLACE_ME` donde antes iban los IDs de Poppins.
+- [x] **Schema multi-entidad** — `supabase/migrations/20260804000001_init_multi_entidad_tributario.sql`:
+      28 tablas con `entidad_id` en la raíz + RLS por entidad. Entidades, actividades, régimen
+      histórico, socios/participaciones, ejercicios/períodos, **registros empresariales
+      (RAI/REX/CPT/DDAN) + SAC desglosado por código**, retiros, F22, F29, bienes raíces,
+      contribuciones, arriendos (con marca de relacionado), activo fijo/depreciación,
+      remuneraciones, y acceso/RLS. Ver ADRs 0002-0004. **Aplicado al Supabase de Campero.**
+- [x] **Seed inicial** — `20260804000002_seed_entidades.sql`: Campero + René con saldos
+      iniciales (RAI Campero $15.594.809, SAC por código, F22 AT2025/AT2026, activo fijo,
+      contratos socios). Registros de René = placeholder (falta desglose de su F22).
+- [ ] **Verificar SAC** de Campero línea por línea contra el F22 (`verificado_vs_f22=false`).
+- [ ] Auth — `src/lib/auth/context.tsx` viene del modelo multi-empleador de Poppins; adaptar
+      al modelo `usuarios_permitidos` + `usuario_entidades` (acceso por entidad).
+- [x] Proyecto Supabase propio creado (`ubeznuaenthtmszngfrk`) — no se reutilizó el de Poppins.
+- [ ] **Hosting sin decidir** — el repo trae config de Cloudflare Workers (`wrangler.jsonc`,
+      OpenNext), pero se evaluó mover a Vercel. Decidir antes del deploy.
 
 ## Setup
 

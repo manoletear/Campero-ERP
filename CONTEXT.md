@@ -3,18 +3,29 @@
 Este documento define los términos del dominio, tal como se han acordado hasta ahora.
 No contiene detalles de implementación — eso vive en el código y en los ADRs (`docs/adr/`).
 
+> **Actualización 2026-08-04:** el ERP pasó a **multi-entidad** (decisión de Manuel).
+> Administra DOS contribuyentes: Campero Ltda (77.488.690-7) y René Aravena Riffo
+> (6.836.579-1), ambos 14A con contabilidad completa. El schema se reescribió
+> (`supabase/migrations/`) con `entidad_id` en la raíz y se aplicó al Supabase de
+> Campero. Ver ADR 0004. El ADR 0001 (single-tenant) queda superado.
+
 ## Términos resueltos
 
-- **Campero**: Sociedad Comercial Agrícola e Inversiones Campero Limitada, RUT 77.488.690-7.
-  Único tenant de este ERP.
+- **Entidad**: cada contribuyente administrado. Tabla `entidades` (tipo `sociedad` o
+  `persona_natural`). Hoy dos filas: Campero y René. `entidad_id` es la raíz de todo el
+  modelo y del RLS. Ver ADR 0004 (supera ADR 0001).
 
-- **Empresa** (entidad de datos): sí existe como tabla (`empresas`), aunque hoy tenga una
-  sola fila. Ver ADR 0001. Decisión de Manuel, confirmada explícitamente.
+- **Campero**: Soc. Comercial Agrícola e Inversiones Campero Limitada, RUT 77.488.690-7.
+  Sociedad 14A. Giro real: medios (antena TV/radio), inmobiliario, publicidad (NO agrícola,
+  pese al nombre). Tres socios al 33% (Erica, Manuel, Carmen).
 
-- **Régimen tributario**: se modela como historial temporal (`empresa_regimen_historial`),
-  no como columna fija — porque ya sabemos que cambia (14A hoy, candidato a Pro Pyme 14D N°3
-  desde 2027). Ver ADR 0002. **Esta la decidió Claude sin ponérsela a Manuel explícitamente
-  como pregunta — pendiente de confirmar con él, no darla por 100% cerrada.**
+- **René Aravena Riffo**: RUT 6.836.579-1, persona natural, empresario individual 14A con
+  contabilidad completa. Giro inmobiliario (30 propiedades, arriendo exento tipo 34).
+  Arrienda 4 inmuebles a Campero → operación con relacionados (Art 41 E, DJ 1907).
+
+- **Régimen tributario**: se modela como historial temporal (`entidad_regimen_historial`),
+  no como columna fija — porque ya sabemos que cambia (14A hoy en ambas, Campero candidato a
+  Pro Pyme 14D N°3 desde 2027). Ver ADR 0002.
 
 - **Colaborador**: persona con sueldo empresarial en Campero. Hoy son tres: Manuel Aravena
   Linnebrink, Carmen Aravena Linnebrink y Erica Linnebrink Jaramillo (esta última aún sin
@@ -53,30 +64,28 @@ No contiene detalles de implementación — eso vive en el código y en los ADRs
   formulario pero no se revisaron línea por línea contra un F29 real de Campero — hacerlo
   antes de usar esto para declarar de verdad.**
 
-## Términos pendientes de definir (no inventar sin confirmar con Manuel)
-
-Existe una tabla esqueleto (`rai_sac_stub`) solo para no bloquear las foreign keys de otras
-tablas — sus campos reales NO están diseñados todavía.
-
-- **RAI / SAC**: registros del sistema de rentas empresariales (Art. 14 LIR). Definidos
-  conceptualmente en la ficha tributaria del proyecto "Contabilidad Panguipulli", pero el
-  SAC real de Campero se compone de varios códigos del F22 (1300/1301/1305/1308/1335/1345),
-  no de un solo número — el modelo de datos tiene que reflejar eso, no aplanarlo a un campo.
+- **Registros de rentas empresariales (Art. 14 LIR)**: ya diseñados (el `rai_sac_stub`
+  quedó eliminado). `registros_empresariales` guarda RAI, REX, CPT (código 1145), capital
+  y DDAN por entidad + año tributario. El SAC va desglosado en `sac_detalle` por código F22
+  (1300/1301/1305/1308/1335/1345), tasa (27/25) y año de origen — nunca aplanado a un número.
+  Campero AT2026: RAI $15.594.809 (seed cargado). **Pendiente:** verificar el SAC línea por
+  línea contra el F22 (`verificado_vs_f22`), y extraer los registros de René de su F22.
 
 ## Mapa de directorio
 
 ```
 /
-├── CONTEXT.md              ← este archivo
+├── CONTEXT.md               ← este archivo
 ├── README.md                ← estado del proyecto, qué se heredó de Poppins y qué falta
 ├── docs/adr/
-│   ├── 0001-empresa-como-entidad.md
+│   ├── 0001-empresa-como-entidad.md   (SUPERADO por 0004)
 │   ├── 0002-regimen-tributario-temporal.md
-│   └── 0003-f29-nivel-agregado.md
+│   ├── 0003-f29-nivel-agregado.md
+│   └── 0004-multi-entidad.md
 ├── src/
-│   ├── lib/                  ← motor de payroll, BUK, contratos, etc. (heredado de Poppins)
-│   └── app/                  ← shell mínimo de Next.js (placeholder, sin auth real todavía)
+│   ├── lib/                 ← motor de payroll, BUK, contratos, etc. (heredado de Poppins)
+│   └── app/                 ← shell mínimo de Next.js (placeholder, sin auth real todavía)
 └── supabase/migrations/
-    └── 0001_init.sql          ← schema base: empresas, colaboradores, contratos, periodos,
-                                  liquidaciones, previred_envios, f29_periodos + stub RAI/SAC
+    ├── 20260804000001_init_multi_entidad_tributario.sql  ← schema: 28 tablas + RLS por entidad
+    └── 20260804000002_seed_entidades.sql                 ← seed Campero + René (saldos iniciales)
 ```
