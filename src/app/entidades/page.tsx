@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +63,8 @@ export default async function EntidadesPage() {
           const sac = reg?.sac_detalle?.reduce((s, x) => s + (x.monto ?? 0), 0) ?? null;
 
           return (
-            <Card key={e.id}>
+            <Link key={e.id} href={`/entidades/${e.id}`} className="block transition hover:opacity-80">
+            <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -97,6 +99,7 @@ export default async function EntidadesPage() {
                 </dl>
               </CardContent>
             </Card>
+            </Link>
           );
         })}
       </div>
