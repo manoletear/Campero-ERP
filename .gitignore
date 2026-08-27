@@ -16,3 +16,6 @@
 npm-debug.log*
 .vercel
 .wrangler
+
+# Build artifacts
+tsconfig.tsbuildinfo
