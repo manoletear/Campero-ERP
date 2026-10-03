@@ -48,11 +48,16 @@ export default async function EntidadesPage() {
 
   return (
     <main className="mx-auto max-w-4xl p-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Entidades</h1>
-        <p className="text-sm text-zinc-500">
-          {entidades.length} entidad(es) administradas · saldos del último año tributario
-        </p>
+      <header className="mb-6 flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Entidades</h1>
+          <p className="text-sm text-zinc-500">
+            {entidades.length} entidad(es) administradas · saldos del último año tributario
+          </p>
+        </div>
+        <Link href="/proyeccion" className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-50">
+          Proyección de impuesto →
+        </Link>
       </header>
 
       <div className="grid gap-4">
